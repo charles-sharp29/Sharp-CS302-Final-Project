@@ -1,0 +1,45 @@
+# ============================================================
+# CI — runs the test suite on every push and pull request.
+# ============================================================
+#
+# This workflow boots a fresh Ubuntu VM on GitHub's servers, installs
+# Python + the project's dependencies, and runs `pytest`. The result
+# (✅ or ❌) shows up next to every commit on GitHub and under the
+# repo's "Actions" tab.
+#
+# We pin Python 3.11 because the wheels in requirements.txt
+# (numpy 1.26.4, scikit-learn 1.5.0, pandas 2.2.2) are built for
+# Python 3.9–3.12. Newer Python versions would force pip to compile
+# from source, which is slow and brittle in CI.
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: Run pytest on Ubuntu
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+          cache-dependency-path: requirements.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run unit tests
+        run: python -m pytest tests/ -v
