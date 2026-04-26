@@ -19,7 +19,12 @@ services:
     # Render injects $PORT — gunicorn binds to it. One worker is plenty
     # on the free tier (free plans have ~512 MB RAM).
     startCommand: "gunicorn app:server --bind 0.0.0.0:$PORT --workers 1 --timeout 120"
-    autoDeploy: true
+    # Continuous Delivery: deploys are triggered explicitly by the
+    # `release` job in .github/workflows/ci-cd.yml (which a human kicks
+    # off via the GitHub Actions "Run workflow" button), NOT
+    # automatically on every git push. Render's own auto-deploy is
+    # therefore disabled here.
+    autoDeploy: false
     envVars:
       - key: PYTHON_VERSION
         value: "3.11"

@@ -1,23 +1,33 @@
 # ============================================================
-# CI / CD — one pipeline that tests, then deploys.
+# CI / CD — Continuous Integration + Continuous DELIVERY.
 # ============================================================
 #
-# Triggered on every push to main and every PR targeting main.
+# This pipeline implements the standard "test on every push, deploy on
+# demand" pattern (Continuous DELIVERY, not Continuous DEPLOYMENT):
 #
-# Job 1 (test):
-#   Boots a fresh Ubuntu VM, installs Python + dependencies, runs pytest.
-#   Runs for BOTH push and pull_request events so PRs get a green/red
-#   check before they merge.
+#   Continuous Integration (CI)
+#     - Runs automatically on every push and pull request.
+#     - Job: `test` — installs deps, runs pytest.
+#     - Result: green ✅ / red ❌ check on every commit.
 #
-# Job 2 (deploy):
-#   Only runs on push to main (NOT on PRs) AND only after `test` is green.
-#   Pings Render's deploy hook URL, which makes Render pull the latest
-#   commit, rebuild, and redeploy the live app.
+#   Continuous Delivery (CD)
+#     - The `release` job is *manually* triggered from the GitHub UI:
+#         Repo → Actions tab → "CI / CD" → "Run workflow" (green button).
+#     - It re-runs the test suite (so we never ship a broken commit) and
+#       then pings the Render deploy hook to push the latest commit live.
+#     - A human decides *when* to deploy; the pipeline is what makes that
+#       deploy reliable & one-click.
 #
-# Setup required (one-time, see README "Continuous Deployment" section):
-#   1. Connect this repo to Render via render.yaml (Blueprint).
-#   2. Copy the service's "Deploy Hook" URL from the Render dashboard.
-#   3. In GitHub: Settings → Secrets and variables → Actions →
+# Why this is "Delivery" instead of "Deployment":
+#   The artifact (the tested, packaged, push-ready code on `main`) is
+#   *always* releasable after CI is green. The actual production
+#   deploy is a deliberate human action, not an automatic side-effect
+#   of `git push`. This is the pattern most professional teams use.
+#
+# One-time setup for the manual deploy button:
+#   1. Render dashboard → your `statedge` service → Settings → Deploy
+#      Hook → copy the URL.
+#   2. GitHub repo → Settings → Secrets and variables → Actions →
 #      "New repository secret" → name: RENDER_DEPLOY_HOOK_URL.
 
 name: CI / CD
@@ -27,6 +37,7 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  workflow_dispatch:           # enables the manual "Run workflow" button
 
 jobs:
   test:
@@ -52,11 +63,11 @@ jobs:
       - name: Run unit tests
         run: python -m pytest tests/ -v
 
-  deploy:
-    name: Deploy to Render
+  release:
+    name: Release to production
     runs-on: ubuntu-latest
-    needs: test                                  # gate on green tests
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: test                                    # re-runs tests first
+    if: github.event_name == 'workflow_dispatch'   # ONLY on manual click
 
     steps:
       - name: Trigger Render deploy hook
@@ -64,9 +75,9 @@ jobs:
           RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
         run: |
           if [ -z "$RENDER_DEPLOY_HOOK_URL" ]; then
-            echo "::warning::RENDER_DEPLOY_HOOK_URL is not set — skipping deploy."
+            echo "::error::RENDER_DEPLOY_HOOK_URL is not configured."
             echo "Add it under Settings → Secrets and variables → Actions."
-            exit 0
+            exit 1
           fi
           echo "Pinging Render deploy hook…"
           curl --fail --silent --show-error -X POST "$RENDER_DEPLOY_HOOK_URL"
