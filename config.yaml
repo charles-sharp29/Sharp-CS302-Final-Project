@@ -1,0 +1,37 @@
+# ============================================================
+# NBA Analytics App — Configuration File
+# All app settings live here. Change values here instead of
+# hunting through code files.
+# ============================================================
+
+nba:
+  season: "2025-26"          # NBA season to pull stats from
+  season_type: "Regular Season"
+  recent_games: 10           # How many recent games to use for predictions
+  stat_categories:           # Stats shown in the dashboard and used for prediction
+    - PTS                    # Points
+    - AST                    # Assists
+    - REB                    # Rebounds
+    - FG_PCT                 # Field Goal Percentage
+    - FG3_PCT                # 3-Point Percentage
+
+prediction:
+  model: "random_forest"     # ML model type (Random Forest Regressor)
+  min_games_required: 5      # Minimum games needed before making a prediction
+  confidence_threshold: 0.6  # Legacy field, no longer surfaced in the UI
+
+openai:
+  model: "gpt-3.5-turbo"    # OpenAI model to use for insights (cheaper than gpt-4)
+  max_tokens: 150            # Keep responses short and focused
+  temperature: 0.7           # 0 = very factual, 1 = more creative
+
+storage:
+  data_dir: "data"           # Folder where JSON files are saved
+  favorites_file: "favorites.json"
+  predictions_file: "predictions.json"
+
+ui:
+  app_title: "StatEdge"
+  theme_color: "#C9082A"     # NBA red (dominant brand color)
+  max_players_displayed: 10  # Max search results shown at once
+  chart_height: 400          # Height of charts in pixels

@@ -1,0 +1,33 @@
+# NBA Analytics App — Python Dependencies
+# Install with: pip install -r requirements.txt
+
+# --- Web UI ---
+dash==2.17.0
+dash-bootstrap-components==1.6.0
+plotly==5.22.0
+
+# --- NBA Data ---
+nba_api==1.4.1                  # Official NBA stats API wrapper
+
+# --- Data Processing ---
+pandas==2.2.2                   # DataFrames for cleaning and structuring stats
+numpy==1.26.4                   # Numerical operations used by scikit-learn
+
+# --- Machine Learning ---
+scikit-learn==1.5.0             # Linear regression model for stat prediction
+
+# --- AI Integration ---
+openai==1.30.1                  # OpenAI API client for natural language insights
+
+# --- Charts ---
+plotly==5.22.0                  # Interactive charts inside Streamlit
+
+# --- Config ---
+pyyaml==6.0.1                   # Reads config.yaml settings file
+
+# --- Environment Variables ---
+python-dotenv==1.0.1            # Loads .env file (API keys) safely
+
+# --- Testing ---
+pytest==8.2.1                   # Runs unit tests
+pytest-mock==3.14.0             # Mocking for unit tests (fake API calls)

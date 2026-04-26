@@ -1,0 +1,29 @@
+# ============================================================
+# .gitignore — Tells Git what NOT to upload to GitHub
+# ============================================================
+
+# --- Secrets (NEVER upload these) ---
+.env
+
+# --- Python cache files (auto-generated, not needed) ---
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+
+# --- Virtual environment folder ---
+venv/
+env/
+.venv/
+
+# --- Data files (local only, can contain personal data) ---
+data/
+
+# --- Editor/OS files ---
+.DS_Store
+.vscode/
+*.idea/
+
+# --- Test coverage reports ---
+htmlcov/
+.coverage

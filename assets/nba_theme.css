@@ -1,0 +1,128 @@
+/* ============================================================================
+   StatEdge — NBA brand theme (red-dominant)
+   ----------------------------------------------------------------------------
+   Official NBA logo colors:
+     - NBA Red   #C9082A   ← primary / dominant
+     - NBA Blue  #17408B   ← accent
+     - White     #FFFFFF
+     - Black     #000000
+   Dash auto-loads any CSS file inside the /assets directory at app startup.
+   ========================================================================== */
+
+:root {
+    --nba-red: #C9082A;
+    --nba-red-dark: #8E0520;
+    --nba-red-soft: #FBE6EA;
+    --nba-blue: #17408B;
+    --nba-blue-dark: #0E2A5C;
+    --nba-blue-soft: #E6EEF8;
+    --nba-white: #FFFFFF;
+    --nba-black: #000000;
+    --nba-grey: #F4F4F4;
+}
+
+/* Page background — soft neutral so red pops. */
+body {
+    background-color: var(--nba-grey);
+}
+
+/* ── Navbar (red is dominant) ─────────────────────────────────────────── */
+.navbar.bg-primary,
+nav.bg-primary {
+    background-color: var(--nba-red) !important;
+    border-bottom: 4px solid var(--nba-blue);
+}
+.navbar-brand {
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+/* ── Buttons — primary is now NBA red ─────────────────────────────────── */
+.btn-primary {
+    background-color: var(--nba-red) !important;
+    border-color: var(--nba-red) !important;
+    color: var(--nba-white) !important;
+}
+.btn-primary:hover,
+.btn-primary:focus,
+.btn-primary:active {
+    background-color: var(--nba-red-dark) !important;
+    border-color: var(--nba-red-dark) !important;
+    color: var(--nba-white) !important;
+}
+
+/* Secondary buttons use NBA blue as the accent. */
+.btn-secondary {
+    background-color: var(--nba-blue) !important;
+    border-color: var(--nba-blue) !important;
+    color: var(--nba-white) !important;
+}
+.btn-secondary:hover,
+.btn-secondary:focus,
+.btn-secondary:active {
+    background-color: var(--nba-blue-dark) !important;
+    border-color: var(--nba-blue-dark) !important;
+    color: var(--nba-white) !important;
+}
+
+/* ── Tabs (red active indicator) ──────────────────────────────────────── */
+.nav-tabs .nav-link.active {
+    color: var(--nba-red) !important;
+    border-top: 3px solid var(--nba-red) !important;
+    font-weight: 600;
+}
+.nav-tabs .nav-link {
+    color: var(--nba-red-dark);
+}
+
+/* ── Cards (red leading edge) ─────────────────────────────────────────── */
+.card {
+    border-color: var(--nba-red);
+    border-top: 3px solid var(--nba-red);
+}
+
+/* ── Alerts ───────────────────────────────────────────────────────────── */
+/* Force the dismiss "X" to be obvious so each pop-up clearly has an exit
+   button. dbc.Alert(dismissable=True) renders the .btn-close child. */
+.alert .btn-close {
+    opacity: 0.85;
+}
+.alert .btn-close:hover {
+    opacity: 1;
+}
+
+.alert-info {
+    background-color: var(--nba-red-soft);
+    border-color: var(--nba-red);
+    color: var(--nba-red-dark);
+}
+.alert-danger {
+    background-color: #FBD9DF;
+    border-color: var(--nba-red-dark);
+    color: var(--nba-red-dark);
+}
+.alert-warning {
+    background-color: #FFF4D6;
+    border-color: #B8860B;
+    color: #5C4500;
+}
+.alert-secondary {
+    background-color: var(--nba-blue-soft);
+    border-color: var(--nba-blue);
+    color: var(--nba-blue-dark);
+}
+
+/* ── List groups (favorites) ──────────────────────────────────────────── */
+.list-group-item {
+    border-left: 4px solid var(--nba-red);
+}
+.list-group-item:nth-child(even) {
+    border-left-color: var(--nba-blue);
+}
+
+/* ── Headings get a subtle red underline accent on cards ──────────────── */
+.card-body > h4.card-title {
+    border-bottom: 2px solid var(--nba-red);
+    padding-bottom: 0.4rem;
+    color: var(--nba-red-dark);
+}
