@@ -7,7 +7,7 @@ dash-bootstrap-components==1.6.0
 plotly==5.22.0                  # Interactive charts rendered inside Dash
 
 # --- NBA Data ---
-nba_api==1.4.1                  # Official NBA stats API wrapper
+nba_api==1.11.4                 # Official NBA stats API wrapper (1.11+ adds ScheduleLeagueV2)
 
 # --- Data Processing ---
 pandas==2.2.2                   # DataFrames for cleaning and structuring stats
