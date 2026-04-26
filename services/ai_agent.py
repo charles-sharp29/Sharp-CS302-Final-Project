@@ -251,6 +251,12 @@ class AIAgent:
         Initialize the OpenAI client and configure model parameters.
 
         The API key is loaded from the environment via `os.environ.get`.
+        If the key is missing (e.g. on a fresh production host where the
+        secret hasn't been set yet) we DO NOT crash — instead we mark the
+        client as unavailable so callers automatically fall through to
+        the deterministic `generate_fallback_insight*` methods. This lets
+        the app boot and serve charts/predictions even before the
+        OPENAI_API_KEY env var is wired up.
 
         Args:
             model: OpenAI chat model name.
@@ -259,7 +265,16 @@ class AIAgent:
 
         self.model = model
         self.max_tokens = max_tokens
-        self._client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+
+        api_key = os.environ.get("OPENAI_API_KEY")
+        if not api_key:
+            self._client = None
+            return
+
+        try:
+            self._client = OpenAI(api_key=api_key)
+        except Exception:
+            self._client = None
 
     @retry(max_attempts=3, delay=2.0)
     def generate_insight(
@@ -283,6 +298,12 @@ class AIAgent:
         Returns:
             A concise 2–3 sentence insight string from the model.
         """
+
+        # If OPENAI_API_KEY isn't configured, skip the network call and let
+        # the caller use generate_fallback_insight() (raising here lets the
+        # @retry decorator surface a clean error instead of a NoneType crash).
+        if self._client is None:
+            raise RuntimeError("OpenAI client unavailable (OPENAI_API_KEY not set)")
 
         # Build the full prompt including the two new contextual factors.
         prompt = self._build_prompt(game_log, prediction, rest_days, opponent_def_rating)
@@ -414,6 +435,12 @@ class AIAgent:
         Returns:
             A 2–4 sentence insight string from the model.
         """
+
+        # If OPENAI_API_KEY isn't configured, skip the network call and let
+        # the caller use generate_fallback_insight_multi() (raising here lets
+        # the @retry decorator surface cleanly instead of a NoneType crash).
+        if self._client is None:
+            raise RuntimeError("OpenAI client unavailable (OPENAI_API_KEY not set)")
 
         preds_list: List[Prediction] = list(predictions)
         prompt = self._build_prompt_multi(
