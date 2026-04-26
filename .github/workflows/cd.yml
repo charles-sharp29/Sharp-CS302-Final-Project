@@ -1,0 +1,83 @@
+# ============================================================
+# CD — Continuous Delivery.
+# ============================================================
+#
+# Continuous Delivery (NOT Continuous Deployment): every commit on
+# main that passes CI produces a release-ready, downloadable artifact.
+# A human still has to choose to deploy it — this workflow does not
+# touch any production host.
+#
+# Triggers
+#   - workflow_run: fires automatically when the CI workflow
+#     completes successfully on `main`. This is the chain that
+#     makes "CD only after CI passes" enforceable.
+#   - workflow_dispatch: lets you build an ad-hoc release artifact
+#     from the GitHub Actions UI on demand.
+#
+# What it produces
+#   A zip archive of the application source (everything except dev-
+#   only files: tests, venv, caches, .env, etc.), versioned by the
+#   commit SHA. The artifact is uploaded to the workflow run and is
+#   downloadable from the Actions tab for 90 days. Anyone can grab
+#   it, unzip it, run `pip install -r requirements.txt` and
+#   `gunicorn app:server`, and have the exact tested build live.
+
+name: CD
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build-artifact:
+    name: Build release artifact
+    runs-on: ubuntu-latest
+    # Skip if CI failed (workflow_run fires on both success & failure).
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      github.event.workflow_run.conclusion == 'success'
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Compute version tag from commit SHA
+        id: version
+        run: echo "tag=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Stage release files
+        run: |
+          mkdir -p release/statedge
+          # Copy only what's needed to run the app in production.
+          # Dev / test / VCS files are deliberately excluded.
+          rsync -a \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='venv' \
+            --exclude='.venv' \
+            --exclude='__pycache__' \
+            --exclude='*.pyc' \
+            --exclude='.pytest_cache' \
+            --exclude='.coverage' \
+            --exclude='htmlcov' \
+            --exclude='.env' \
+            --exclude='data' \
+            --exclude='tests' \
+            --exclude='release' \
+            ./ release/statedge/
+
+      - name: Create zip
+        run: |
+          cd release
+          zip -r "statedge-${{ steps.version.outputs.tag }}.zip" statedge/
+
+      - name: Upload release artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: statedge-${{ steps.version.outputs.tag }}
+          path: release/statedge-${{ steps.version.outputs.tag }}.zip
+          if-no-files-found: error
+          retention-days: 90
