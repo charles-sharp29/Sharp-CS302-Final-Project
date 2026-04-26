@@ -7,6 +7,8 @@ Run with:
     python app.py
 """
 
+import os
+
 import dash_bootstrap_components as dbc
 import pandas as pd
 import plotly.express as px
@@ -82,12 +84,18 @@ ai_agent = AIAgent(
     max_tokens=config["openai"]["max_tokens"],
 )
 
+# Production WSGI servers (gunicorn, etc.) import `server` from this module
+# and serve it directly. Locally `python app.py` still works because we call
+# `app.run(...)` from the __main__ block at the bottom of the file.
 app = Dash(
     __name__,
     external_stylesheets=[dbc.themes.BOOTSTRAP],
     suppress_callback_exceptions=True,
     title=config["ui"]["app_title"],
 )
+
+# Render / Heroku / any WSGI host imports this. Don't remove.
+server = app.server
 
 
 # ── Layout helpers ────────────────────────────────────────────────────────────────
@@ -840,4 +848,11 @@ def load_favorite_callback(n_clicks_list, current_search_clicks):
 # ── Entrypoint ────────────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    # Local dev: hot-reload + debug page. Production hosts (Render etc.)
+    # import `server` above and never hit this block. We still respect
+    # PORT/HOST so you can `python app.py` inside a container if needed.
+    app.run(
+        host=os.environ.get("HOST", "127.0.0.1"),
+        port=int(os.environ.get("PORT", "8050")),
+        debug=os.environ.get("DASH_DEBUG", "true").lower() == "true",
+    )
