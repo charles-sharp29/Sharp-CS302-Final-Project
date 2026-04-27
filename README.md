@@ -88,6 +88,41 @@ streamlit run app.py
 
 ---
 
+## ☁️ Deploy to Railway
+
+The repo ships with a `Procfile`, `railway.json`, and `.python-version`, so Railway will auto-detect, build, and serve the app with Gunicorn.
+
+### Option A — Deploy from the Railway dashboard (easiest)
+
+1. Push this repo to GitHub (already done if you cloned it).
+2. Go to [railway.com](https://railway.com) → **New Project** → **Deploy from GitHub repo**.
+3. Pick this repository and let Railway run the first build (it will use Nixpacks + `requirements.txt`).
+4. Open the new service → **Variables** → add:
+   - `OPENAI_API_KEY` = your real OpenAI key
+5. Open the **Settings** tab → **Networking** → **Generate Domain** to get a public URL.
+6. Wait for the deploy to go green and visit the domain. Done.
+
+### Option B — Deploy from the Railway CLI
+
+```bash
+npm i -g @railway/cli
+railway login
+railway init                # link this folder to a new Railway project
+railway variables --set OPENAI_API_KEY=sk-...
+railway up                  # build & deploy
+railway domain              # generate a public URL
+```
+
+### Notes for production
+
+- Gunicorn is started via the `Procfile`:
+  `gunicorn app:server --bind 0.0.0.0:$PORT --workers 1 --threads 4 --timeout 120`
+  Single worker + threads avoids duplicating the in-memory caches; the long timeout gives `nba_api` room to respond.
+- Railway's filesystem is **ephemeral** — `data/favorites.json` and `data/predictions.json` reset on every redeploy. If you want them to persist, add a Railway **Volume** mounted at `/app/data` from the service's **Settings** tab.
+- Python version is pinned to `3.12.3` via `.python-version` to match the `numpy 1.26.4` / `pandas 2.2.2` wheels in `requirements.txt`.
+
+---
+
 ## 🧪 Running Tests
 ```bash
 pytest tests/ -v
