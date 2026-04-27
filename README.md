@@ -156,7 +156,7 @@ PythonAnywhere doesn't block requests to `stats.nba.com`, so this is the most re
    - **Source code:** `/home/<YOUR_USERNAME>/NBA_Analytics_Final_Project`
    - **Working directory:** `/home/<YOUR_USERNAME>/NBA_Analytics_Final_Project`
    - **Virtualenv:** `/home/<YOUR_USERNAME>/.virtualenvs/statedge-venv`
-8. Click the **WSGI configuration file** link near the top of the Web tab. Replace its entire contents with the contents of `pythonanywhere_wsgi.py` from this repo, then change `<YOUR_USERNAME>` to your real PythonAnywhere username. Save.
+8. Click the **WSGI configuration file** link near the top of the Web tab. Replace its entire contents with the contents of `pythonanywhere_wsgi.py` from this repo, then change `<YOUR_USERNAME>` to your real PythonAnywhere username. Save. The proxy env vars at the top of that file are required — without them outbound NBA / OpenAI requests get blocked by PythonAnywhere's free-tier outbound firewall and time out at 30s.
 9. Click the green **Reload** button at the top of the Web tab.
 10. Visit `https://<YOUR_USERNAME>.pythonanywhere.com` — done.
 
