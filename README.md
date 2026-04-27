@@ -121,6 +121,63 @@ railway domain              # generate a public URL
 - Railway's filesystem is **ephemeral** — `data/favorites.json` and `data/predictions.json` reset on every redeploy. If you want them to persist, add a Railway **Volume** mounted at `/app/data` from the service's **Settings** tab.
 - Python version is pinned to `3.12.3` via `.python-version` to match the `numpy 1.26.4` / `pandas 2.2.2` wheels in `requirements.txt`.
 
+> ⚠️ **NBA API + cloud hosts:** `stats.nba.com` actively throttles requests from Railway/Render/Heroku/Fly IP ranges, which causes read-timeout errors that don't reproduce locally. If you hit this, **deploy to PythonAnywhere instead** (see below) — `stats.nba.com` is on PythonAnywhere's outbound whitelist for free accounts.
+
+---
+
+## ☁️ Deploy to PythonAnywhere (recommended for `nba_api`)
+
+PythonAnywhere doesn't block requests to `stats.nba.com`, so this is the most reliable free host for an `nba_api`-driven app. The deploy is a bit more manual than Railway because PythonAnywhere uses a WSGI config file instead of a Procfile — but the repo includes `pythonanywhere_wsgi.py` as a copy-paste template.
+
+### One-time setup
+
+1. **Sign up** at [pythonanywhere.com](https://www.pythonanywhere.com) and pick the free Beginner plan.
+2. **Open a Bash console** (Dashboard → "New console" → Bash).
+3. **Clone the repo**:
+   ```bash
+   git clone https://github.com/charles-sharp29/Sharp-CS302-Final-Project.git NBA_Analytics_Final_Project
+   cd NBA_Analytics_Final_Project
+   ```
+4. **Create a virtualenv with Python 3.12** and install dependencies:
+   ```bash
+   mkvirtualenv --python=python3.12 statedge-venv
+   pip install -r requirements.txt
+   ```
+   (This takes ~3–5 minutes — pandas/numpy/scikit-learn wheels are large.)
+5. **Create the `.env` file** with your OpenAI key:
+   ```bash
+   echo "OPENAI_API_KEY=sk-your-real-key-here" > .env
+   ```
+
+### Configure the web app
+
+6. Go to the **Web** tab → **Add a new web app** → **Manual configuration** (NOT Flask) → pick **Python 3.12**.
+7. On the resulting Web tab, set:
+   - **Source code:** `/home/<YOUR_USERNAME>/NBA_Analytics_Final_Project`
+   - **Working directory:** `/home/<YOUR_USERNAME>/NBA_Analytics_Final_Project`
+   - **Virtualenv:** `/home/<YOUR_USERNAME>/.virtualenvs/statedge-venv`
+8. Click the **WSGI configuration file** link near the top of the Web tab. Replace its entire contents with the contents of `pythonanywhere_wsgi.py` from this repo, then change `<YOUR_USERNAME>` to your real PythonAnywhere username. Save.
+9. Click the green **Reload** button at the top of the Web tab.
+10. Visit `https://<YOUR_USERNAME>.pythonanywhere.com` — done.
+
+### Updating later
+
+```bash
+workon statedge-venv
+cd ~/NBA_Analytics_Final_Project
+git pull
+# if requirements.txt changed:
+pip install -r requirements.txt
+```
+Then click **Reload** on the Web tab.
+
+### Free-tier limits to know about
+
+- **CPU:** 100 seconds/day of CPU time. The first NBA API call after a cold start can be slow, but a typical session uses far less than this.
+- **Disk:** 512 MB. A fresh install of this app's dependencies sits around ~300 MB, so there's headroom but don't add anything large.
+- **Idle expiration:** Free web apps that get no traffic for 1 month go offline — visit your URL once a month to keep it alive, or click Reload.
+- **Outbound whitelist:** `stats.nba.com` and `api.openai.com` are both already whitelisted; this app doesn't talk to anything else, so no allowlist requests are needed.
+
 ---
 
 ## 🧪 Running Tests
