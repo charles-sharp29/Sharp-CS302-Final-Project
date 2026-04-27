@@ -1,0 +1,21 @@
+# NBA Analytics App — PythonAnywhere-only dependencies
+#
+# Use this with a Python 3.11 virtualenv created with --system-site-packages,
+# so the heavy scientific stack (pandas, numpy, scikit-learn, plotly, dash)
+# is inherited from PythonAnywhere's pre-installed batteries instead of being
+# duplicated inside your 512 MB free-tier disk quota.
+#
+# Install with:
+#     mkvirtualenv --python=python3.11 --system-site-packages statedge-venv
+#     pip install --no-cache-dir -r requirements-pythonanywhere.txt
+#
+# This file deliberately does NOT pin pandas / numpy / scikit-learn / plotly /
+# dash — we use whatever versions PythonAnywhere ships, which are recent enough
+# for everything this app does (px.line, add_hline, RandomForestRegressor, etc.).
+
+# --- NOT in PythonAnywhere's batteries — must be installed ---
+dash-bootstrap-components==1.6.0
+nba_api==1.11.4
+openai==1.30.1
+python-dotenv==1.0.1
+pyyaml==6.0.1

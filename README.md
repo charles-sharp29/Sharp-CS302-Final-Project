@@ -138,12 +138,12 @@ PythonAnywhere doesn't block requests to `stats.nba.com`, so this is the most re
    git clone https://github.com/charles-sharp29/Sharp-CS302-Final-Project.git NBA_Analytics_Final_Project
    cd NBA_Analytics_Final_Project
    ```
-4. **Create a virtualenv with Python 3.12** and install the slim production deps:
+4. **Create a virtualenv with Python 3.11** that inherits PythonAnywhere's pre-installed scientific stack:
    ```bash
-   mkvirtualenv --python=python3.12 statedge-venv
-   pip install --no-cache-dir -r requirements-prod.txt
+   mkvirtualenv --python=python3.11 --system-site-packages statedge-venv
+   pip install --no-cache-dir -r requirements-pythonanywhere.txt
    ```
-   This takes ~3–5 minutes. **Do not install `requirements.txt`** on the free tier — it includes `pytest`, `pytest-mock`, and `gunicorn`, which together with pip's wheel cache push you past the 512 MB disk quota. `requirements-prod.txt` ships only what the deployed app actually imports, and `--no-cache-dir` skips pip's wheel cache entirely.
+   This takes about a minute. **Do not use Python 3.12 on the free tier** — PythonAnywhere only ships `pandas` / `numpy` / `scikit-learn` / `plotly` / `dash` as pre-installed system packages on Python 3.10 and 3.11, so on 3.12 you'd have to install all of them yourself and blow past the 512 MB quota. `--system-site-packages` lets the venv re-use the system copies, and `requirements-pythonanywhere.txt` only pins the ~5 small packages PythonAnywhere doesn't already include.
 5. **Create the `.env` file** with your OpenAI key:
    ```bash
    echo "OPENAI_API_KEY=sk-your-real-key-here" > .env
@@ -151,7 +151,7 @@ PythonAnywhere doesn't block requests to `stats.nba.com`, so this is the most re
 
 ### Configure the web app
 
-6. Go to the **Web** tab → **Add a new web app** → **Manual configuration** (NOT Flask) → pick **Python 3.12**.
+6. Go to the **Web** tab → **Add a new web app** → **Manual configuration** (NOT Flask) → pick **Python 3.11** (must match the venv).
 7. On the resulting Web tab, set:
    - **Source code:** `/home/<YOUR_USERNAME>/NBA_Analytics_Final_Project`
    - **Working directory:** `/home/<YOUR_USERNAME>/NBA_Analytics_Final_Project`
@@ -166,24 +166,24 @@ PythonAnywhere doesn't block requests to `stats.nba.com`, so this is the most re
 workon statedge-venv
 cd ~/NBA_Analytics_Final_Project
 git pull
-# if requirements-prod.txt changed:
-pip install --no-cache-dir -r requirements-prod.txt
+# if requirements-pythonanywhere.txt changed:
+pip install --no-cache-dir -r requirements-pythonanywhere.txt
 ```
 Then click **Reload** on the Web tab.
 
 ### Recovering from a "disk quota exceeded" install
 
-If `pip install` ever errors with `[Errno 122] Disk quota exceeded`, your venv + pip cache are over the 512 MB limit. Clean up and retry:
+If `pip install` errors with `[Errno 122] Disk quota exceeded`, your venv is too big — almost always because the venv was created on Python 3.12 (no system batteries available) or without `--system-site-packages`. Clean up and recreate on 3.11:
 
 ```bash
 deactivate 2>/dev/null || true
 rmvirtualenv statedge-venv
 rm -rf ~/.cache/pip
-mkvirtualenv --python=python3.12 statedge-venv
-pip install --no-cache-dir -r requirements-prod.txt
+mkvirtualenv --python=python3.11 --system-site-packages statedge-venv
+pip install --no-cache-dir -r requirements-pythonanywhere.txt
 ```
 
-Then check usage with `du -sh ~/.virtualenvs/statedge-venv ~/NBA_Analytics_Final_Project ~/.cache 2>/dev/null` — a successful install should leave you around 320–360 MB total, well under quota.
+Then check usage with `du -sh ~/.virtualenvs/statedge-venv ~/NBA_Analytics_Final_Project ~/.cache 2>/dev/null` — a healthy venv built this way is only ~30–60 MB, well under quota.
 
 ### Free-tier limits to know about
 
