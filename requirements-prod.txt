@@ -1,0 +1,34 @@
+# NBA Analytics App — Production Dependencies (PythonAnywhere / disk-constrained hosts)
+# Use this instead of requirements.txt on PythonAnywhere's free tier, where the
+# 512 MB disk quota leaves no room for pytest/gunicorn build artifacts.
+#
+# Install with:
+#     pip install --no-cache-dir -r requirements-prod.txt
+#
+# Deltas vs. requirements.txt:
+#   - dropped pytest / pytest-mock      → dev-only, not needed in prod
+#   - dropped gunicorn                  → PythonAnywhere uses its own uWSGI server
+
+# --- Web UI ---
+dash==2.17.0
+dash-bootstrap-components==1.6.0
+plotly==5.22.0
+
+# --- NBA Data ---
+nba_api==1.11.4
+
+# --- Data Processing ---
+pandas==2.2.2
+numpy==1.26.4
+
+# --- Machine Learning ---
+scikit-learn==1.5.0
+
+# --- AI Integration ---
+openai==1.30.1
+
+# --- Config ---
+pyyaml==6.0.1
+
+# --- Environment Variables ---
+python-dotenv==1.0.1

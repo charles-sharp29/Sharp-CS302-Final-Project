@@ -138,12 +138,12 @@ PythonAnywhere doesn't block requests to `stats.nba.com`, so this is the most re
    git clone https://github.com/charles-sharp29/Sharp-CS302-Final-Project.git NBA_Analytics_Final_Project
    cd NBA_Analytics_Final_Project
    ```
-4. **Create a virtualenv with Python 3.12** and install dependencies:
+4. **Create a virtualenv with Python 3.12** and install the slim production deps:
    ```bash
    mkvirtualenv --python=python3.12 statedge-venv
-   pip install -r requirements.txt
+   pip install --no-cache-dir -r requirements-prod.txt
    ```
-   (This takes ~3–5 minutes — pandas/numpy/scikit-learn wheels are large.)
+   This takes ~3–5 minutes. **Do not install `requirements.txt`** on the free tier — it includes `pytest`, `pytest-mock`, and `gunicorn`, which together with pip's wheel cache push you past the 512 MB disk quota. `requirements-prod.txt` ships only what the deployed app actually imports, and `--no-cache-dir` skips pip's wheel cache entirely.
 5. **Create the `.env` file** with your OpenAI key:
    ```bash
    echo "OPENAI_API_KEY=sk-your-real-key-here" > .env
@@ -166,10 +166,24 @@ PythonAnywhere doesn't block requests to `stats.nba.com`, so this is the most re
 workon statedge-venv
 cd ~/NBA_Analytics_Final_Project
 git pull
-# if requirements.txt changed:
-pip install -r requirements.txt
+# if requirements-prod.txt changed:
+pip install --no-cache-dir -r requirements-prod.txt
 ```
 Then click **Reload** on the Web tab.
+
+### Recovering from a "disk quota exceeded" install
+
+If `pip install` ever errors with `[Errno 122] Disk quota exceeded`, your venv + pip cache are over the 512 MB limit. Clean up and retry:
+
+```bash
+deactivate 2>/dev/null || true
+rmvirtualenv statedge-venv
+rm -rf ~/.cache/pip
+mkvirtualenv --python=python3.12 statedge-venv
+pip install --no-cache-dir -r requirements-prod.txt
+```
+
+Then check usage with `du -sh ~/.virtualenvs/statedge-venv ~/NBA_Analytics_Final_Project ~/.cache 2>/dev/null` — a successful install should leave you around 320–360 MB total, well under quota.
 
 ### Free-tier limits to know about
 
