@@ -2,7 +2,7 @@
 
 A full-stack Python analytics dashboard that lets users search NBA players, visualize their performance trends, and get AI-powered stat predictions for upcoming games.
 
-Built with **Streamlit**, **nba_api**, **scikit-learn**, and **OpenAI**.
+Built with **Dash**, **Plotly**, **nba_api**, **scikit-learn**, and **OpenAI**.
 
 ---
 
